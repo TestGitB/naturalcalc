@@ -38,11 +38,12 @@ import com.mkulesh.micromath.formula.TermParser;
 import com.mkulesh.micromath.formula.io.Constants;
 import com.mkulesh.micromath.formula.type.BaseType;
 import com.mkulesh.micromath.formula.type.ComparatorType;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.math.CalculatedValue;
 import com.mkulesh.micromath.utils.CompatUtils;
 import com.mkulesh.micromath.utils.IdGenerator;
 import com.mkulesh.micromath.utils.ViewUtils;
-import com.mkulesh.micromath.widgets.CalcEditText;
+import com.mkulesh.micromath.widgets.FormulaEditText;
 import com.mkulesh.micromath.widgets.FormulaLayout;
 import com.mkulesh.micromath.widgets.OnFocusChangedListener;
 import com.mkulesh.micromath.widgets.OnTextChangeListener;
@@ -67,7 +68,7 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
     private static final String TAG = "TermField";
 
     private final TermParser mParser = new TermParser();
-    private final CalcEditText mEditText;
+    private final FormulaEditText mEditText;
     private final FormulaView mFormulaRoot, mParentFormula;
     private final LinearLayout mLayout;
 
@@ -87,7 +88,7 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
     private EquationView mLinkedVariable = null;
 
     public TermField(FormulaView formulaRoot, FormulaView parentFormula, LinearLayout layout,
-                     int termDepth, CalcEditText editText) {
+                     int termDepth, FormulaEditText editText) {
         super();
         initLayoutDepth();
 
@@ -331,7 +332,7 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
     }
 
     @Override
-    public int onGetNextFocusId(CalcEditText owner, FocusType focusType) {
+    public int onGetNextFocusId(FormulaEditText owner, FocusType focusType) {
         return mParentFormula.getNextFocusId(mEditText, focusType);
     }
 
@@ -481,7 +482,7 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
     /**
      * Procedure returns associated edit text component
      */
-    public CalcEditText getEditText() {
+    public FormulaEditText getEditText() {
         return mEditText;
     }
 
@@ -630,11 +631,8 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
      * Procedure converts this term field to an other term
      */
     private FormulaTermView convertToTerm(String termCode, Parcelable restore, boolean ensureManualTrigger) {
-        if (DLog.DEBUG)
-            DLog.d(TAG, "convertToTerm() called with: code = [" + termCode + "], p = [" + restore +
-                    "], ensureManualTrigger = [" + ensureManualTrigger + "]");
-
-        TermType targetType = FormulaTermView.getTermType(getContext(), mEditText, termCode, ensureManualTrigger);
+        FormulaTermType.TermType targetType = FormulaTermView.getTermType(getContext(), mEditText,
+                termCode, ensureManualTrigger);
         mTermView = null;
         if (targetType != null) {
             try {
@@ -792,7 +790,7 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
      * If there is a parsing error, it will be shown
      */
     public void showParsingError() {
-        if (DLog.DEBUG) DLog.d(TAG, "showParsingError() called");
+        /*if (DLog.DEBUG) DLog.d(TAG, "showParsingError() called");
         final String errMsg = findErrorMsg();
         if (errMsg != null) {
             Toast.makeText(mFormulaRoot.getContext(), errMsg, Toast.LENGTH_SHORT).show();
@@ -802,7 +800,7 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
         } else if (!isEmpty() && mContentType == ContentType.INVALID && mParser.errorId != NO_ERROR_ID) {
             Toast.makeText(mFormulaRoot.getContext(), mFormulaRoot.getContext().getResources().getString(mParser.errorId),
                     Toast.LENGTH_SHORT).show();
-        }
+        }*/
     }
 
     /**
@@ -932,11 +930,4 @@ public class TermField implements OnTextChangeListener, OnFocusChangedListener, 
         PARENT_LAYOUT
     }
 
-    public static enum TermType {
-        OPERATOR,
-        COMPARATOR,
-        FUNCTION,
-        INTERVAL,
-        LOOP
-    }
 }

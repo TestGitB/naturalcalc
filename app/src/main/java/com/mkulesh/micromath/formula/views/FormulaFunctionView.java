@@ -30,13 +30,14 @@ import com.duy.common.utils.DLog;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask.CancelException;
 import com.mkulesh.micromath.formula.BracketParser;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.formula.type.FunctionTrigger;
 import com.mkulesh.micromath.formula.type.FunctionType;
 import com.mkulesh.micromath.math.CalculatedValue;
 import com.mkulesh.micromath.utils.CompatUtils;
 import com.mkulesh.micromath.utils.ViewUtils;
-import com.mkulesh.micromath.widgets.CalcEditText;
-import com.mkulesh.micromath.widgets.CalcTextView;
+import com.mkulesh.micromath.widgets.FormulaEditText;
+import com.mkulesh.micromath.widgets.FormulaTextView;
 import com.mkulesh.micromath.widgets.ScaledDimensions;
 import com.nstudio.calc.casio.R;
 
@@ -47,7 +48,7 @@ public class FormulaFunctionView extends FormulaTermView {
     private static final String TAG = "FormulaFunctionView";
     private FunctionType mFunctionType = null;
     private String mFunctionLinkName = "unknown";
-    private CalcTextView mFunctionTerm = null;
+    private FormulaTextView mFunctionTerm = null;
     private EquationView mLinkedFunction = null;
 
     public FormulaFunctionView(TermField owner, LinearLayout layout, String code, int index) throws Exception {
@@ -185,11 +186,18 @@ public class FormulaFunctionView extends FormulaTermView {
             case POWER_LAYOUT:
                 inflateElements(R.layout.formula_function_pow, true);
                 break;
+            case Solve:
+                inflateElements(R.layout.formula_function_solve, true);
+                break;
+            case Log:
+                inflateElements(R.layout.formula_function_logn, true);
+                break;
             default:
                 inflateElements(R.layout.formula_function_named, true);
                 break;
         }
         initializeElements(index);
+
         if (mTerms.isEmpty()) {
             throw new Exception("argument list is empty");
         }
@@ -240,18 +248,7 @@ public class FormulaFunctionView extends FormulaTermView {
     }
 
     private void prepareSpecialCase() {
-        switch (mFunctionType) {
-            case Solve:
-                mTerms.get(0).getEditText().setComparatorEnabled(true);
-                if (!mTerms.get(0).isTerm()) {
-                    mTerms.get(0).setText("==0"); //add == operator
-                }
-                if (mTerms.get(1).getEditText().getText().length() == 0) {
-                    mTerms.get(1).getEditText().setEquationEnable(true);
-                    mTerms.get(1).setText("x");
-                }
-                break;
-        }
+        // TODO: 1/18/2018
     }
 
     @Override
@@ -271,7 +268,7 @@ public class FormulaFunctionView extends FormulaTermView {
                 return "Power(" + left + "," + right + ")";
             }
             case FACTORIAL_LAYOUT:
-                return mFunctionType.getCode() + "(" + mTerms.get(0).toExpressionString() + ")";
+                return "Factorial(" + mTerms.get(0).toExpressionString() + ")";
             case SQRT_LAYOUT:
                 return "Sqrt(" + argsToString() + ")";
             case SURD_LAYOUT:
@@ -280,6 +277,11 @@ public class FormulaFunctionView extends FormulaTermView {
                 return "Abs(" + mTerms.get(0).toExpressionString() + ")";
             case CONJUGATE_LAYOUT:
                 return "Conjugate(" + mTerms.get(0).toExpressionString() + ")";
+            case Solve:
+                String left = mTerms.get(0).toExpressionString();
+                String right = mTerms.get(1).toExpressionString();
+                String var = mTerms.get(2).toExpressionString();
+                return String.format("Solve(%s==%s,%s)", left, right, var);
             case FUNCTION_LINK:
             case FUNCTION_INDEX:
                 return mLinkedFunction.toExpressionString();
@@ -302,8 +304,8 @@ public class FormulaFunctionView extends FormulaTermView {
     }
 
     @Override
-    public TermField.TermType getTermType() {
-        return TermField.TermType.FUNCTION;
+    public FormulaTermType.TermType getTermType() {
+        return FormulaTermType.TermType.FUNCTION;
     }
 
     @Override
@@ -363,12 +365,12 @@ public class FormulaFunctionView extends FormulaTermView {
     }
 
     @Override
-    protected CalcTextView initializeSymbol(CalcTextView view) {
+    protected FormulaTextView initializeSymbol(FormulaTextView view) {
         final Resources res = getContext().getResources();
         if (view.getText() != null) {
             String code = view.getText().toString();
             if (code.equals(res.getString(R.string.formula_operator_key))) {
-                view.prepare(CalcTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
+                view.prepare(FormulaTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
                 switch (mFunctionType) {
                     case POWER_LAYOUT:
                         view.setText("_");
@@ -377,7 +379,7 @@ public class FormulaFunctionView extends FormulaTermView {
                         view.setText(res.getString(R.string.formula_function_factorial_layout));
                         break;
                     case CONJUGATE_LAYOUT:
-                        view.prepare(CalcTextView.SymbolType.HOR_LINE, getFormulaRoot().getFormulaList().getActivity(), this);
+                        view.prepare(FormulaTextView.SymbolType.HOR_LINE, getFormulaRoot().getFormulaList().getActivity(), this);
                         view.setText("_");
                         break;
                     default:
@@ -386,13 +388,15 @@ public class FormulaFunctionView extends FormulaTermView {
                 }
                 mFunctionTerm = view;
             } else if (code.equals(res.getString(R.string.formula_left_bracket_key))) {
-                CalcTextView.SymbolType s = (mFunctionType == FunctionType.ABS_LAYOUT) ? CalcTextView.SymbolType.VERT_LINE
-                        : CalcTextView.SymbolType.LEFT_BRACKET;
+                FormulaTextView.SymbolType s = (mFunctionType == FunctionType.ABS_LAYOUT)
+                        ? FormulaTextView.SymbolType.VERT_LINE
+                        : FormulaTextView.SymbolType.LEFT_BRACKET;
                 view.prepare(s, getFormulaRoot().getFormulaList().getActivity(), this);
                 view.setText("."); // this text defines view width/height
             } else if (code.equals(res.getString(R.string.formula_right_bracket_key))) {
-                CalcTextView.SymbolType s = (mFunctionType == FunctionType.ABS_LAYOUT) ? CalcTextView.SymbolType.VERT_LINE
-                        : CalcTextView.SymbolType.RIGHT_BRACKET;
+                FormulaTextView.SymbolType s = (mFunctionType == FunctionType.ABS_LAYOUT)
+                        ? FormulaTextView.SymbolType.VERT_LINE
+                        : FormulaTextView.SymbolType.RIGHT_BRACKET;
                 view.prepare(s, getFormulaRoot().getFormulaList().getActivity(), this);
                 view.setText("."); // this text defines view width/height
             }
@@ -401,37 +405,62 @@ public class FormulaFunctionView extends FormulaTermView {
     }
 
     @Override
-    protected CalcEditText initializeTerm(CalcEditText v, LinearLayout l) {
-        if (v.getText() != null) {
-            final String val = v.getText().toString();
-            if (mFunctionType == FunctionType.FUNCTION_INDEX
-                    && val.equals(getContext().getResources().getString(R.string.formula_arg_term_key))) {
-                final TermField t = addTerm(getFormulaRoot(), l, -1, v, this, getArgumentDepth());
+    protected FormulaEditText initializeTerm(FormulaEditText child, LinearLayout parent) {
+        if (child.getText() != null) {
+            final String key = child.getText().toString();
+            String argTermKey = getContext().getResources().getString(R.string.formula_arg_term_key);
+            String leftTermKey = getContext().getResources().getString(R.string.formula_left_term_key);
+            String rightTermKey = getContext().getResources().getString(R.string.formula_right_term_key);
+            if (mFunctionType == FunctionType.FUNCTION_INDEX) {
+                if (key.equals(argTermKey)) {
+                    TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, getArgumentDepth());
+                    t.bracketsType = TermField.BracketsType.NEVER;
+                }
+            } else if (mFunctionType == FunctionType.SURD_LAYOUT) {
+
+                if (key.equals(leftTermKey)) {
+                    TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, 3);
+                    t.bracketsType = TermField.BracketsType.NEVER;
+
+                } else if (key.equals(rightTermKey)) {
+                    TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, 0);
+                    t.bracketsType = TermField.BracketsType.NEVER;
+                }
+
+            } else if (mFunctionType == FunctionType.POWER_LAYOUT) {
+                if (key.equals(leftTermKey)) {
+                    TermField t = addTerm(getFormulaRoot(), parent, child, this, false);
+                    t.bracketsType = TermField.BracketsType.ALWAYS;
+
+                } else if (key.equals(rightTermKey)) {
+                    TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, 3);
+                    t.bracketsType = TermField.BracketsType.NEVER;
+
+                }
+            } else if (mFunctionType == FunctionType.Solve) {
+                TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, 0);
                 t.bracketsType = TermField.BracketsType.NEVER;
-            } else if (mFunctionType != FunctionType.FUNCTION_INDEX
-                    && val.equals(getContext().getResources().getString(R.string.formula_arg_term_key))) {
-                final TermField t = addTerm(getFormulaRoot(), l, -1, v, this, 0);
-                t.bracketsType = (mFunctionType == FunctionType.FACTORIAL_LAYOUT || mFunctionType == FunctionType.CONJUGATE_LAYOUT) ? TermField.BracketsType.ALWAYS
-                        : TermField.BracketsType.NEVER;
-            } else if (mFunctionType == FunctionType.SURD_LAYOUT
-                    && val.equals(getContext().getResources().getString(R.string.formula_left_term_key))) {
-                final TermField t = addTerm(getFormulaRoot(), l, -1, v, this, 3);
-                t.bracketsType = TermField.BracketsType.NEVER;
-            } else if (mFunctionType == FunctionType.SURD_LAYOUT
-                    && val.equals(getContext().getResources().getString(R.string.formula_right_term_key))) {
-                final TermField t = addTerm(getFormulaRoot(), l, -1, v, this, 0);
-                t.bracketsType = TermField.BracketsType.NEVER;
-            } else if (mFunctionType == FunctionType.POWER_LAYOUT
-                    && val.equals(getContext().getResources().getString(R.string.formula_left_term_key))) {
-                final TermField t = addTerm(getFormulaRoot(), l, v, this, false);
-                t.bracketsType = TermField.BracketsType.ALWAYS;
-            } else if (mFunctionType == FunctionType.POWER_LAYOUT
-                    && val.equals(getContext().getResources().getString(R.string.formula_right_term_key))) {
-                final TermField t = addTerm(getFormulaRoot(), l, -1, v, this, 3);
-                t.bracketsType = TermField.BracketsType.NEVER;
+
+            } else if (mFunctionType == FunctionType.Log) {
+                if (key.equals(leftTermKey)) {
+                    TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, 3);
+                    t.bracketsType = TermField.BracketsType.IFNECESSARY;
+
+                } else if (key.equals(rightTermKey)) {
+                    TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, 0);
+                    t.bracketsType = TermField.BracketsType.IFNECESSARY;
+                }
+            } else if (key.equals(argTermKey)) {
+                TermField t = addTerm(getFormulaRoot(), parent, -1, child, this, 0);
+                if (mFunctionType == FunctionType.FACTORIAL_LAYOUT
+                        || mFunctionType == FunctionType.CONJUGATE_LAYOUT) {
+                    t.bracketsType = TermField.BracketsType.ALWAYS;
+                } else {
+                    t.bracketsType = TermField.BracketsType.NEVER;
+                }
             }
         }
-        return v;
+        return child;
     }
 
     @Override
@@ -485,7 +514,7 @@ public class FormulaFunctionView extends FormulaTermView {
     }
 
     @Override
-    public void onDelete(CalcEditText owner) {
+    public void onDelete(FormulaEditText owner) {
         final TermField ownerTerm = findTerm(owner);
         final Resources res = getResources();
         if (mFunctionType == FunctionType.SURD_LAYOUT
@@ -594,8 +623,7 @@ public class FormulaFunctionView extends FormulaTermView {
                 }
                 return nameAndArgs;
             }
-            final String fName = f.getCode()
-                    + res.getString(R.string.formula_function_start_bracket);
+            final String fName = f.getCode() + res.getString(R.string.formula_function_start_bracket);
             if (s.contains(fName)) {
                 return s.replace(fName, "");
             }
@@ -654,7 +682,7 @@ public class FormulaFunctionView extends FormulaTermView {
     /**
      * Returns function term
      */
-    public CalcTextView getFunctionTerm() {
+    public FormulaTextView getFunctionTerm() {
         return mFunctionTerm;
     }
 
@@ -687,7 +715,7 @@ public class FormulaFunctionView extends FormulaTermView {
     /**
      * Error codes that can be generated by function term
      */
-    public static enum ErrorCode {
+    public enum ErrorCode {
         NO_ERROR(-1),
         UNKNOWN_FUNCTION(R.string.error_unknown_function),
         UNKNOWN_ARRAY(R.string.error_unknown_array),

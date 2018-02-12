@@ -28,18 +28,19 @@ import com.duy.common.utils.DLog;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask.CancelException;
 import com.mkulesh.micromath.formula.IArgumentHolder;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.formula.type.LoopType;
 import com.mkulesh.micromath.math.CalculatedValue;
 import com.mkulesh.micromath.utils.ViewUtils;
-import com.mkulesh.micromath.widgets.CalcEditText;
-import com.mkulesh.micromath.widgets.CalcTextView;
+import com.mkulesh.micromath.widgets.FormulaEditText;
+import com.mkulesh.micromath.widgets.FormulaTextView;
 import com.mkulesh.micromath.widgets.ScaledDimensions;
 import com.nstudio.calc.casio.R;
 
 import java.util.ArrayList;
 
 import static com.mkulesh.micromath.formula.type.LoopType.INTEGRAL;
-import static com.mkulesh.micromath.widgets.CalcTextView.SymbolType.SUMMATION;
+import static com.mkulesh.micromath.widgets.FormulaTextView.SymbolType.SUMMATION;
 
 public class FormulaTermLoopView extends FormulaTermView implements IArgumentHolder {
     private static final String SYMBOL_LAYOUT_TAG = "SYMBOL_LAYOUT_TAG";
@@ -113,8 +114,8 @@ public class FormulaTermLoopView extends FormulaTermView implements IArgumentHol
     }
 
     @Override
-    public TermField.TermType getTermType() {
-        return TermField.TermType.LOOP;
+    public FormulaTermType.TermType getTermType() {
+        return FormulaTermType.TermType.LOOP;
     }
 
     @Override
@@ -140,7 +141,7 @@ public class FormulaTermLoopView extends FormulaTermView implements IArgumentHol
     }
 
     @Override
-    protected CalcTextView initializeSymbol(CalcTextView v) {
+    protected FormulaTextView initializeSymbol(FormulaTextView v) {
         if (v.getText() != null) {
             String t = v.getText().toString();
             if (t.equals(getContext().getResources().getString(R.string.formula_operator_key))) {
@@ -151,47 +152,47 @@ public class FormulaTermLoopView extends FormulaTermView implements IArgumentHol
                         v.setText("S..");
                         break;
                     case PRODUCT:
-                        v.prepare(CalcTextView.SymbolType.PRODUCT, getFormulaRoot().getFormulaList().getActivity(), this);
+                        v.prepare(FormulaTextView.SymbolType.PRODUCT, getFormulaRoot().getFormulaList().getActivity(), this);
                         v.setText("S..");
                         break;
                     case INTEGRAL:
-                        v.prepare(CalcTextView.SymbolType.INTEGRAL, getFormulaRoot().getFormulaList().getActivity(), this);
+                        v.prepare(FormulaTextView.SymbolType.INTEGRAL, getFormulaRoot().getFormulaList().getActivity(), this);
                         v.setText("S..");
                         break;
                     case DERIVATIVE:
-                        v.prepare(CalcTextView.SymbolType.HOR_LINE, getFormulaRoot().getFormulaList().getActivity(), this);
+                        v.prepare(FormulaTextView.SymbolType.HOR_LINE, getFormulaRoot().getFormulaList().getActivity(), this);
                         break;
                 }
             } else if (t.equals(getContext().getResources().getString(R.string.formula_left_bracket_key))) {
-                v.prepare(CalcTextView.SymbolType.LEFT_BRACKET, getFormulaRoot().getFormulaList().getActivity(), this);
+                v.prepare(FormulaTextView.SymbolType.LEFT_BRACKET, getFormulaRoot().getFormulaList().getActivity(), this);
                 v.setText("."); // this text defines view width/height
             } else if (t.equals(getContext().getResources().getString(R.string.formula_right_bracket_key))) {
-                v.prepare(CalcTextView.SymbolType.RIGHT_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
+                v.prepare(FormulaTextView.SymbolType.RIGHT_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
                         this);
                 v.setText("."); // this text defines view width/height
             } else if (t.equals(getContext().getResources().getString(R.string.formula_loop_diff))) {
-                v.prepare(CalcTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
+                v.prepare(FormulaTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
             }
         }
         return v;
     }
 
     @Override
-    protected CalcEditText initializeTerm(CalcEditText v, LinearLayout l) {
+    protected FormulaEditText initializeTerm(FormulaEditText child, LinearLayout parent) {
         final int addDepth = (mLoopType == INTEGRAL || mLoopType == LoopType.DERIVATIVE) ? 0 : 3;
-        if (v.getText() != null) {
-            if (v.getText().toString().equals(getContext().getResources().getString(R.string.formula_max_value_key))) {
-                mMaxValueTerm = addTerm(getFormulaRoot(), l, -1, v, this, addDepth);
-            } else if (v.getText().toString()
+        if (child.getText() != null) {
+            if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_max_value_key))) {
+                mMaxValueTerm = addTerm(getFormulaRoot(), parent, -1, child, this, addDepth);
+            } else if (child.getText().toString()
                     .equals(getContext().getResources().getString(R.string.formula_min_value_key))) {
-                mMinValueTerm = addTerm(getFormulaRoot(), l, -1, v, this, addDepth);
-            } else if (v.getText().toString().equals(getContext().getResources().getString(R.string.formula_index_key))) {
-                mIndexTerm = addTerm(getFormulaRoot(), l, -1, v, this, addDepth);
-            } else if (v.getText().toString().equals(getContext().getResources().getString(R.string.formula_arg_term_key))) {
-                mArgTerm = addTerm(getFormulaRoot(), l, v, this, false);
+                mMinValueTerm = addTerm(getFormulaRoot(), parent, -1, child, this, addDepth);
+            } else if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_index_key))) {
+                mIndexTerm = addTerm(getFormulaRoot(), parent, -1, child, this, addDepth);
+            } else if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_arg_term_key))) {
+                mArgTerm = addTerm(getFormulaRoot(), parent, child, this, false);
             }
         }
-        return v;
+        return child;
     }
 
     @Override
@@ -212,7 +213,7 @@ public class FormulaTermLoopView extends FormulaTermView implements IArgumentHol
 
 
     @Override
-    public void onDelete(CalcEditText owner) {
+    public void onDelete(FormulaEditText owner) {
         final TermField t = findTerm(owner);
         TermField r = (t != null && t != getArgumentTerm()) ? getArgumentTerm() : null;
         parentField.onTermDelete(removeElements(), r);

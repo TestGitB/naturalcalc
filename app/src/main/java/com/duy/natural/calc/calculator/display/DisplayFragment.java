@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,7 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.duy.natural.calc.calculator.CalculatorContract;
-import com.mkulesh.micromath.BaseFragment;
+import com.mkulesh.micromath.BaseDisplayFragment;
 import com.mkulesh.micromath.dialogs.DialogNewFormula;
 import com.mkulesh.micromath.fman.AdapterIf;
 import com.mkulesh.micromath.fman.Commander;
@@ -21,15 +23,17 @@ import com.mkulesh.micromath.fman.FileType;
 import com.mkulesh.micromath.fman.FileUtils;
 import com.mkulesh.micromath.formula.io.XmlLoaderTask;
 import com.mkulesh.micromath.utils.ViewUtils;
+import com.mkulesh.micromath.widgets.ScaleMenuHandler;
 import com.nstudio.calc.casio.R;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by Duy on 1/13/2018.
  */
 
-public class DisplayFragment extends BaseFragment implements CalculatorContract.IDisplayView {
+public class DisplayFragment extends BaseDisplayFragment implements CalculatorContract.IDisplayView {
     public static final String AUTOSAVE_FILE_NAME = "autosave.mmt";
     protected boolean invalidateFile = false;
     private CalculatorContract.IPresenter mPresenter;
@@ -230,10 +234,31 @@ public class DisplayFragment extends BaseFragment implements CalculatorContract.
             case R.id.action_export_image:
                 exportImage();
                 break;
+            case R.id.action_save_to_file:
+                createExample();
+                break;
+            case R.id.action_change_size:
+                openZoomControl();
+                break;
 
         }
     }
 
+    private void openZoomControl() {
+        ScaleMenuHandler mScaleMenuHandler = new ScaleMenuHandler(getContext());
+        mScaleMenuHandler.startActionMode((AppCompatActivity) getActivity(), mFormulaList);
+    }
+
+    @VisibleForTesting
+    private void createExample() {
+        File file = new File(getContext().getFilesDir(), "tmp.xml");
+        try {
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        mFormulaList.writeToFile(Uri.fromFile(file));
+    }
 
 
     @Override

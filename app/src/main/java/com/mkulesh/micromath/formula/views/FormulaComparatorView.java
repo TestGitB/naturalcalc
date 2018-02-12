@@ -27,9 +27,10 @@ import android.widget.LinearLayout;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask.CancelException;
 import com.mkulesh.micromath.formula.type.ComparatorType;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.math.CalculatedValue;
-import com.mkulesh.micromath.widgets.CalcEditText;
-import com.mkulesh.micromath.widgets.CalcTextView;
+import com.mkulesh.micromath.widgets.FormulaEditText;
+import com.mkulesh.micromath.widgets.FormulaTextView;
 import com.nstudio.calc.casio.R;
 
 public class FormulaComparatorView extends FormulaTermView {
@@ -40,7 +41,7 @@ public class FormulaComparatorView extends FormulaTermView {
      */
     private ComparatorType mComparatorType = null;
     private TermField mLeftTerm = null, mRightTerm = null;
-    private CalcTextView operatorKey = null;
+    private FormulaTextView operatorKey = null;
     private boolean useBrackets = false;
 
 
@@ -87,8 +88,8 @@ public class FormulaComparatorView extends FormulaTermView {
 
 
     @Override
-    public TermField.TermType getTermType() {
-        return TermField.TermType.COMPARATOR;
+    public FormulaTermType.TermType getTermType() {
+        return FormulaTermType.TermType.COMPARATOR;
     }
 
     @Override
@@ -97,18 +98,18 @@ public class FormulaComparatorView extends FormulaTermView {
     }
 
     @Override
-    protected CalcTextView initializeSymbol(CalcTextView v) {
+    protected FormulaTextView initializeSymbol(FormulaTextView v) {
         if (v.getText() != null) {
             String t = v.getText().toString();
             if (t.equals(getContext().getResources().getString(R.string.formula_operator_key))) {
                 operatorKey = v;
-                v.prepare(CalcTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
+                v.prepare(FormulaTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
                 updateOperatorKey();
             } else if (t.equals(getContext().getResources().getString(R.string.formula_left_bracket_key))) {
-                v.prepare(CalcTextView.SymbolType.LEFT_BRACKET, getFormulaRoot().getFormulaList().getActivity(), this);
+                v.prepare(FormulaTextView.SymbolType.LEFT_BRACKET, getFormulaRoot().getFormulaList().getActivity(), this);
                 v.setText("."); // this text defines view width/height
             } else if (t.equals(getContext().getResources().getString(R.string.formula_right_bracket_key))) {
-                v.prepare(CalcTextView.SymbolType.RIGHT_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
+                v.prepare(FormulaTextView.SymbolType.RIGHT_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
                         this);
                 v.setText("."); // this text defines view width/height
             }
@@ -117,21 +118,21 @@ public class FormulaComparatorView extends FormulaTermView {
     }
 
     @Override
-    protected CalcEditText initializeTerm(CalcEditText v, LinearLayout l) {
-        if (v.getText() != null) {
-            if (v.getText().toString().equals(getContext().getResources().getString(R.string.formula_left_term_key))) {
-                mLeftTerm = addTerm(getFormulaRoot(), l, v, this, false);
+    protected FormulaEditText initializeTerm(FormulaEditText child, LinearLayout parent) {
+        if (child.getText() != null) {
+            if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_left_term_key))) {
+                mLeftTerm = addTerm(getFormulaRoot(), parent, child, this, false);
             }
-            if (v.getText().toString().equals(getContext().getResources().getString(R.string.formula_right_term_key))) {
-                mRightTerm = addTerm(getFormulaRoot(), l, v, this, false);
+            if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_right_term_key))) {
+                mRightTerm = addTerm(getFormulaRoot(), parent, child, this, false);
             }
         }
-        return v;
+        return child;
     }
 
 
     @Override
-    public void onDelete(CalcEditText owner) {
+    public void onDelete(FormulaEditText owner) {
         if (parentField != null) {
             TermField t = findTerm(owner);
             TermField r = null;

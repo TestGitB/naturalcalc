@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <com.mkulesh.micromath.widgets.FormulaLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:tag="@string/function_main_layout"
+        app:verticalTermPadding="true">
+
+        <com.mkulesh.micromath.widgets.FormulaTextView
+            style="@style/FormulaTextViewStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/formula_function_solve" />
+
+        <com.mkulesh.micromath.widgets.FormulaTextView
+            style="@style/FormulaTextViewStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/formula_left_bracket_key" />
+
+        <com.mkulesh.micromath.widgets.FormulaEditText
+            style="@style/FormulaTextEditStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/formula_arg_term_key"
+            app:newTermEnabled="false" />
+
+        <com.mkulesh.micromath.widgets.FormulaTextView
+            style="@style/FormulaTextViewStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/formula_result_definition" />
+
+        <com.mkulesh.micromath.widgets.FormulaEditText
+            style="@style/FormulaTextEditStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/formula_arg_term_key"
+            app:newTermEnabled="false" />
+
+        <com.mkulesh.micromath.widgets.FormulaTextView
+            style="@style/FormulaTextViewStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="@string/formula_right_bracket_key" />
+
+        <com.mkulesh.micromath.widgets.FormulaTextView
+            style="@style/FormulaTextViewStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/formula_hor_text_padding"
+            android:layout_marginRight="@dimen/formula_hor_text_padding"
+            android:text="@string/formula_function_solve_for" />
+
+        <com.mkulesh.micromath.widgets.FormulaEditText
+            style="@style/FormulaTextEditStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/formula_index_key"
+            app:equationName="true"
+            app:indexName="true" />
+
+
+    </com.mkulesh.micromath.widgets.FormulaLayout>
+
+</merge>

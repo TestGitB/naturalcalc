@@ -37,7 +37,7 @@ import com.duy.natural.calc.calculator.calcbutton.Category;
 import com.duy.natural.calc.calculator.dialogs.LaTeXFragment;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask;
 import com.duy.natural.calc.calculator.evaluator.result.CalculatedResult;
-import com.mkulesh.micromath.BaseFragment;
+import com.mkulesh.micromath.BaseDisplayFragment;
 import com.mkulesh.micromath.editstate.Coordinate;
 import com.mkulesh.micromath.editstate.DeleteState;
 import com.mkulesh.micromath.editstate.FormulaState;
@@ -64,7 +64,7 @@ import com.mkulesh.micromath.utils.ClipboardManager;
 import com.mkulesh.micromath.utils.CompatUtils;
 import com.mkulesh.micromath.utils.IdGenerator;
 import com.mkulesh.micromath.utils.ViewUtils;
-import com.mkulesh.micromath.widgets.CalcEditText;
+import com.mkulesh.micromath.widgets.FormulaEditText;
 import com.mkulesh.micromath.widgets.OnListChangeListener;
 import com.mkulesh.micromath.widgets.ScaledDimensions;
 import com.mkulesh.micromath.widgets.TwoDScrollView;
@@ -86,7 +86,7 @@ public class FormulaList implements OnClickListener, OnListChangeListener, OnDoc
     private static final String TAG = "FormulaList";
 
     private final ArrayList<FormulaView> mSelectedEquations = new ArrayList<>();
-    private final BaseFragment mFragment;
+    private final BaseDisplayFragment mFragment;
     private final AppCompatActivity mActivity;
     private final TwoDScrollView mFormulaScrollView;
     private final FormulaListView mFormulaListView;
@@ -103,7 +103,7 @@ public class FormulaList implements OnClickListener, OnListChangeListener, OnDoc
     private CalculatorContract.IDisplayView mDisplayView;
     private CalculatorContract.IKeyboardView mKeyboardView;
 
-    public FormulaList(BaseFragment fragment, View rootView) {
+    public FormulaList(BaseDisplayFragment fragment, View rootView) {
         mFragment = fragment;
         mActivity = (AppCompatActivity) fragment.getActivity();
 
@@ -323,7 +323,7 @@ public class FormulaList implements OnClickListener, OnListChangeListener, OnDoc
                         term.getTerm().onPasteFromClipboard(null, code);
                     } else {
                         BasicSymbolType numberType = BasicSymbolType.getNumberType(code);
-                        CalcEditText editText = term.getEditText();
+                        FormulaEditText editText = term.getEditText();
                         if (numberType != null) {
                             onInsert(numberType.toString(), editText);
                         } else {
@@ -349,14 +349,14 @@ public class FormulaList implements OnClickListener, OnListChangeListener, OnDoc
         return mFormulaListView.isEmpty();
     }
 
-    private void onInsert(String text, CalcEditText editText) {
+    private void onInsert(String text, FormulaEditText editText) {
         editText.insert(text);
     }
 
     private void onActionButtonPressed(ActionType actionType) {
         // term operations
         FormulaView view = mRootFormulas.get(mSelectedFormulaId);
-        CalcEditText editText = null;
+        FormulaEditText editText = null;
         if (view != null) {
             TermField tf = view.findFocusedTerm();
             if (tf != null) {

@@ -8,13 +8,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.Toolbar;
@@ -24,14 +28,15 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import com.duy.common.purchase.InAppPurchaseActivity;
 import com.duy.common.utils.ShareUtil;
 import com.duy.common.utils.StoreUtil;
 import com.duy.natural.calc.calculator.display.DisplayFragment;
+import com.duy.natural.calc.calculator.evaluator.SystemLoaderTask;
 import com.duy.natural.calc.calculator.keyboard.KeyboardFragment;
+import com.duy.natural.calc.calculator.settings.BaseActivity;
 import com.duy.natural.calc.calculator.settings.SettingActivity;
 import com.kobakei.ratethisapp.RateThisApp;
-import com.mkulesh.micromath.BaseFragment;
+import com.mkulesh.micromath.BaseDisplayFragment;
 import com.mkulesh.micromath.editstate.clipboard.FormulaClipboardData;
 import com.mkulesh.micromath.fman.AdapterDocuments;
 import com.mkulesh.micromath.utils.AppLocale;
@@ -47,7 +52,7 @@ import java.util.Locale;
  * Created by Duy on 1/13/2018.
  */
 
-public class CalculatorActivity extends InAppPurchaseActivity {
+public class CalculatorActivity extends BaseActivity {
     /**
      * Constants used to save/restore the instance state.
      */
@@ -63,7 +68,8 @@ public class CalculatorActivity extends InAppPurchaseActivity {
     private CharSequence mWorksheetName = null;
     private Toolbar mToolbar = null;
     private ArrayList<ActionMode> mActiveActionModes = null;
-
+    private DrawerLayout mDrawerLayout;
+    private NavigationView mNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +77,9 @@ public class CalculatorActivity extends InAppPurchaseActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_calculator);
+
+        bindView();
+
 
         KeyboardFragment keyboard = KeyboardFragment.newInstance();
         replaceFragment(keyboard, R.id.container_keyboard);
@@ -80,13 +89,21 @@ public class CalculatorActivity extends InAppPurchaseActivity {
         mPresenter = new CalculatorPresenter(display, keyboard);
         mPresenter.onCreate();
 
+        mActiveActionModes = new ArrayList<>();
+        showDialogRate();
+
+        new SystemLoaderTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void bindView() {
         mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-
-        mActiveActionModes = new ArrayList<>();
-        postShowFullScreenAdsAfter(1000 * 60 * 4); //4 minus
-
-        showDialogRate();
+        mNavigationView = findViewById(R.id.nav_view);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle listener = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar,
+                R.string.open_drawer, R.string.close_drawer);
+        mDrawerLayout.addDrawerListener(listener);
+        listener.syncState();
     }
 
     private void showDialogRate() {
@@ -129,31 +146,30 @@ public class CalculatorActivity extends InAppPurchaseActivity {
             case R.id.action_undo:
             case R.id.action_new:
             case R.id.action_discard:
-            case R.id.action_new_document: {
-                BaseFragment baseFragment = getVisibleFragment();
-                if (baseFragment == null) {
+            case R.id.action_new_document:
+            case R.id.action_export_image:
+            case R.id.action_change_size: {
+                BaseDisplayFragment baseDisplayFragment = getVisibleFragment();
+                if (baseDisplayFragment == null) {
                     return true;
                 }
-                baseFragment.performAction(menuItem.getItemId());
+                baseDisplayFragment.performAction(menuItem.getItemId());
                 return true;
             }
             case R.id.action_open:
             case R.id.action_save:
             case R.id.action_save_as:
             case R.id.action_export:
-            case R.id.action_export_image: {
+            case R.id.action_save_to_file: {
                 if (checkStoragePermission(menuItem.getItemId())) {
-                    BaseFragment baseFragment = getVisibleFragment();
-                    if (baseFragment == null) {
+                    BaseDisplayFragment baseDisplayFragment = getVisibleFragment();
+                    if (baseDisplayFragment == null) {
                         return true;
                     }
-                    baseFragment.performAction(menuItem.getItemId());
+                    baseDisplayFragment.performAction(menuItem.getItemId());
                 }
                 return true;
             }
-            case R.id.action_remove_ads:
-                showDialogUpgrade();
-                return true;
             case R.id.action_setting:
                 openSetting();
                 return true;
@@ -227,7 +243,7 @@ public class CalculatorActivity extends InAppPurchaseActivity {
         mToolbar.setVisibility(View.INVISIBLE);
         super.onSupportActionModeStarted(mode);
         mActiveActionModes.add(mode);
-        final BaseFragment f = getVisibleFragment();
+        final BaseDisplayFragment f = getVisibleFragment();
         if (f != null) {
             f.updateModeTitle();
         }
@@ -272,12 +288,12 @@ public class CalculatorActivity extends InAppPurchaseActivity {
         this.mWorksheetName = name;
     }
 
-    public BaseFragment getVisibleFragment() {
+    public BaseDisplayFragment getVisibleFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         List<Fragment> fragments = fragmentManager.getFragments();
         for (Fragment fragment : fragments) {
-            if (fragment != null && fragment.isVisible() && (fragment instanceof BaseFragment)) {
-                return (BaseFragment) fragment;
+            if (fragment != null && fragment.isVisible() && (fragment instanceof BaseDisplayFragment)) {
+                return (BaseDisplayFragment) fragment;
             }
         }
         return null;
@@ -342,7 +358,7 @@ public class CalculatorActivity extends InAppPurchaseActivity {
                 if (mStoragePermissionAction != ViewUtils.INVALID_INDEX && grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     ViewUtils.debug(this, "permission was granted, performing file operation action");
-                    final BaseFragment f = getVisibleFragment();
+                    final BaseDisplayFragment f = getVisibleFragment();
                     if (f != null) {
                         f.performAction(mStoragePermissionAction);
                     }

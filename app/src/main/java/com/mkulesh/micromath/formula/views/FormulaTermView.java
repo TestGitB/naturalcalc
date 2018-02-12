@@ -27,14 +27,15 @@ import com.duy.common.utils.DLog;
 import com.mkulesh.micromath.editstate.clipboard.FormulaClipboardData;
 import com.mkulesh.micromath.formula.type.BaseType;
 import com.mkulesh.micromath.formula.type.ComparatorType;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.formula.type.FunctionType;
 import com.mkulesh.micromath.formula.type.IntervalType;
 import com.mkulesh.micromath.formula.type.LoopType;
 import com.mkulesh.micromath.formula.type.OperatorType;
 import com.mkulesh.micromath.utils.ClipboardManager;
 import com.mkulesh.micromath.utils.ViewUtils;
-import com.mkulesh.micromath.widgets.CalcEditText;
-import com.mkulesh.micromath.widgets.CalcTextView;
+import com.mkulesh.micromath.widgets.FormulaEditText;
+import com.mkulesh.micromath.widgets.FormulaTextView;
 import com.mkulesh.micromath.widgets.FormulaLayout;
 import com.mkulesh.micromath.widgets.OnFocusChangedListener;
 import com.nstudio.calc.casio.R;
@@ -57,24 +58,24 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
         this.mFormulaRoot = null;
     }
 
-    public static TermField.TermType getTermType(Context context, CalcEditText editText, String text, boolean ensureManualTrigger) {
+    public static FormulaTermType.TermType getTermType(Context context, FormulaEditText editText, String text, boolean ensureManualTrigger) {
         if (FormulaBinaryOperatorView.getOperatorType(context, text) != null) {
-            return TermField.TermType.OPERATOR;
+            return FormulaTermType.TermType.OPERATOR;
         }
         if (editText.isComparatorEnabled() && FormulaComparatorView.getComparatorType(context, text) != null) {
-            return TermField.TermType.COMPARATOR;
+            return FormulaTermType.TermType.COMPARATOR;
         }
 
         // TermFunction has manual trigger (like "(" or "["): is has to be checked
         final boolean enableFunction = !ensureManualTrigger || FormulaFunctionView.containsFunctionTrigger(context, text);
         if (enableFunction && FormulaFunctionView.getFunctionType(context, text) != null) {
-            return TermField.TermType.FUNCTION;
+            return FormulaTermType.TermType.FUNCTION;
         }
         if (editText.isIntervalEnabled() && FormulaTermIntervalView.getIntervalType(context, text) != null) {
-            return TermField.TermType.INTERVAL;
+            return FormulaTermType.TermType.INTERVAL;
         }
         if (FormulaTermLoopView.getLoopType(context, text) != null) {
-            return TermField.TermType.LOOP;
+            return FormulaTermType.TermType.LOOP;
         }
         return null;
     }
@@ -111,7 +112,7 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
         return null;
     }
 
-    public static FormulaTermView createTermView(TermField.TermType type, TermField termField,
+    public static FormulaTermView createTermView(FormulaTermType.TermType type, TermField termField,
                                                  LinearLayout layout, String text, int viewIndex) throws Exception {
         if (DLog.DEBUG)
             DLog.d(TAG, "createTermView() called with: type = [" + type + "], termField = [" + termField
@@ -212,7 +213,7 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
     /**
      * Procedure returns the type of this term formula
      */
-    public abstract TermField.TermType getTermType();
+    public abstract FormulaTermType.TermType getTermType();
 
     /**
      * Procedure returns code of this term. The code must be unique for a given term type
@@ -222,12 +223,12 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
     /**
      * Procedure will be called for a custom text view initialization
      */
-    protected abstract CalcTextView initializeSymbol(CalcTextView v);
+    protected abstract FormulaTextView initializeSymbol(FormulaTextView v);
 
     /**
      * Procedure will be called for a custom edit term initialization
      */
-    protected abstract CalcEditText initializeTerm(CalcEditText v, LinearLayout l);
+    protected abstract FormulaEditText initializeTerm(FormulaEditText child, LinearLayout parent);
 
 
     @Override
@@ -238,7 +239,7 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
     }
 
     @Override
-    public int getNextFocusId(CalcEditText owner, OnFocusChangedListener.FocusType focusType) {
+    public int getNextFocusId(FormulaEditText owner, OnFocusChangedListener.FocusType focusType) {
         if (mFormulaRoot != null
                 && owner != null
                 && (focusType == OnFocusChangedListener.FocusType.FOCUS_UP || focusType == OnFocusChangedListener.FocusType.FOCUS_DOWN)) {
@@ -265,25 +266,26 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
     /**
      * This procedure shall be called in order to prepare all visual elements
      */
-    protected void initializeElements(int idx) {
+    protected void initializeElements(int index) {
         boolean[] isValid = new boolean[mElements.size()];
         for (int i = 0; i < mElements.size(); i++) {
-            View v = mElements.get(i);
-            if (v instanceof CalcTextView) {
-                isValid[i] = (initializeSymbol((CalcTextView) v) != null);
-            } else if (v instanceof CalcEditText) {
-                isValid[i] = (initializeTerm((CalcEditText) v, layout) != null);
-            } else if (v instanceof LinearLayout) {
-                initializeLayout((LinearLayout) v);
+            View child = mElements.get(i);
+            if (child instanceof FormulaTextView) {
+                isValid[i] = (initializeSymbol((FormulaTextView) child) != null);
+            } else if (child instanceof FormulaEditText) {
+                isValid[i] = (initializeTerm((FormulaEditText) child, layout) != null);
+            } else if (child instanceof LinearLayout) {
+                initializeLayout((LinearLayout) child);
                 isValid[i] = true;
             }
         }
+
         for (int i = mElements.size() - 1; i >= 0; i--) {
-            View v = mElements.get(i);
+            View child = mElements.get(i);
             if (isValid[i]) {
-                layout.addView(v, idx);
+                layout.addView(child, index);
             } else {
-                mElements.remove(v);
+                mElements.remove(child);
             }
         }
     }
@@ -291,17 +293,17 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
     /**
      * This procedure performs recursive initialization of elements from included layouts
      */
-    private void initializeLayout(LinearLayout l) {
-        for (int k = 0; k < l.getChildCount(); k++) {
-            View v = l.getChildAt(k);
-            if (v instanceof CalcTextView) {
-                initializeSymbol((CalcTextView) v);
+    private void initializeLayout(LinearLayout parent) {
+        for (int k = 0; k < parent.getChildCount(); k++) {
+            View child = parent.getChildAt(k);
+            if (child instanceof FormulaTextView) {
+                initializeSymbol((FormulaTextView) child);
             }
-            if (v instanceof CalcEditText) {
-                initializeTerm((CalcEditText) v, l);
+            if (child instanceof FormulaEditText) {
+                initializeTerm((FormulaEditText) child, parent);
             }
-            if (v instanceof LinearLayout) {
-                initializeLayout((LinearLayout) v);
+            if (child instanceof LinearLayout) {
+                initializeLayout((LinearLayout) child);
             }
         }
     }
@@ -338,11 +340,11 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
         inflateElements(newTerms, argLayoutId, true);
         TermField newArg = null;
         for (View t : newTerms) {
-            if (t instanceof CalcTextView) {
-                ((CalcTextView) t).prepare(CalcTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList()
+            if (t instanceof FormulaTextView) {
+                ((FormulaTextView) t).prepare(FormulaTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList()
                         .getActivity(), this);
-            } else if (t instanceof CalcEditText) {
-                newArg = addTerm(getFormulaRoot(), expandableLayout, ++termIndex, (CalcEditText) t, this, addDepth);
+            } else if (t instanceof FormulaEditText) {
+                newArg = addTerm(getFormulaRoot(), expandableLayout, ++termIndex, (FormulaEditText) t, this, addDepth);
                 newArg.bracketsType = TermField.BracketsType.NEVER;
             }
             expandableLayout.addView(t, ++viewIndex);
@@ -374,14 +376,14 @@ public abstract class FormulaTermView extends FormulaView implements ICalculable
             final String termKey = getContext().getResources().getString(R.string.formula_arg_term_key);
             final boolean firstTerm = owner.getTermKey().equals(termKey + String.valueOf(1));
             if (firstTerm && startIndex + 1 < expandableLayout.getChildCount()
-                    && expandableLayout.getChildAt(startIndex + 1) instanceof CalcTextView) {
-                final CalcTextView next = ((CalcTextView) expandableLayout.getChildAt(startIndex + 1));
+                    && expandableLayout.getChildAt(startIndex + 1) instanceof FormulaTextView) {
+                final FormulaTextView next = ((FormulaTextView) expandableLayout.getChildAt(startIndex + 1));
                 if (next.getText().toString().equals(sep)) {
                     count++;
                 }
             } else if (!firstTerm && startIndex >= 1
-                    && expandableLayout.getChildAt(startIndex - 1) instanceof CalcTextView) {
-                final CalcTextView prev = ((CalcTextView) expandableLayout.getChildAt(startIndex - 1));
+                    && expandableLayout.getChildAt(startIndex - 1) instanceof FormulaTextView) {
+                final FormulaTextView prev = ((FormulaTextView) expandableLayout.getChildAt(startIndex - 1));
                 if (prev.getText().toString().equals(sep)) {
                     startIndex--;
                     count++;

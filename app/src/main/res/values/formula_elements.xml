@@ -19,7 +19,6 @@
     <string name="function_main_layout" translatable="false">functionMainLayout</string>
 
     <!--button type-->
-    <string name="type_function" translatable="false">type_function</string>
     <string name="type_constant" translatable="false">type_constant</string>
     <string name="type_variable" translatable="false">type_variable</string>
 
@@ -55,6 +54,8 @@
     <string name="formula_function_abs_layout" translatable="false">|</string>
     <string name="formula_function_factorial_layout" translatable="false">!</string>
     <string name="formula_function_conjugate_layout" translatable="false">~</string>
+    <string name="formula_function_solve" translatable="false">Solve</string>
+    <string name="formula_function_solve_for" translatable="false">for</string>
     <string name="formula_quidistant_interval" translatable="false">:</string>
     <string name="formula_interval_first_separator" translatable="false">,</string>
     <string name="formula_interval_second_separator" translatable="false"> .. </string>

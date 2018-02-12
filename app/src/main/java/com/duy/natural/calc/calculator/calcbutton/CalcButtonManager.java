@@ -34,7 +34,7 @@ import com.duy.natural.calc.calculator.keyboard.OnCalcButtonClickListener;
 import com.mkulesh.micromath.formula.type.ActionType;
 import com.mkulesh.micromath.formula.type.BaseType;
 import com.mkulesh.micromath.formula.type.BasicSymbolType;
-import com.mkulesh.micromath.formula.type.ButtonDescriptor;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.formula.type.ComparatorType;
 import com.mkulesh.micromath.formula.type.FunctionTrigger;
 import com.mkulesh.micromath.formula.type.FunctionType;
@@ -44,7 +44,7 @@ import com.mkulesh.micromath.formula.type.OperatorType;
 import com.mkulesh.micromath.formula.views.FormulaTermView;
 import com.mkulesh.micromath.utils.ClipboardManager;
 import com.mkulesh.micromath.utils.ViewUtils;
-import com.mkulesh.micromath.widgets.CalcEditText;
+import com.mkulesh.micromath.widgets.FormulaEditText;
 import com.mkulesh.micromath.widgets.OnFocusChangedListener;
 import com.mkulesh.micromath.widgets.OnTextChangeListener;
 import com.nstudio.calc.casio.R;
@@ -61,7 +61,7 @@ public class CalcButtonManager implements OnClickListener, OnLongClickListener,
     private final ArrayList<ArrayList<ICalcButton>> mButtonCategory = new ArrayList<>();
     private final ViewGroup mPaletteLayout;
     @Nullable
-    private CalcEditText mHiddenInput;
+    private FormulaEditText mHiddenInput;
     private String mLastHiddenInput = "";
 
     public CalcButtonManager(Context context, ViewGroup parent, OnCalcButtonClickListener listener) {
@@ -130,7 +130,7 @@ public class CalcButtonManager implements OnClickListener, OnLongClickListener,
     }
 
     private void setupBasicButton(ViewGroup viewGroup) {
-        for (ButtonDescriptor type : BasicSymbolType.values()) {
+        for (FormulaTermType type : BasicSymbolType.values()) {
             View view = viewGroup.findViewById(type.getViewId());
             if (view instanceof ICalcButton) {
                 ((ICalcButton) view).initWithParameter(CalcButtonManager.NO_BUTTON,
@@ -350,7 +350,7 @@ public class CalcButtonManager implements OnClickListener, OnLongClickListener,
     }
 
     @Override
-    public int onGetNextFocusId(CalcEditText owner, FocusType focusType) {
+    public int onGetNextFocusId(FormulaEditText owner, FocusType focusType) {
         return R.id.container_display;
     }
 }

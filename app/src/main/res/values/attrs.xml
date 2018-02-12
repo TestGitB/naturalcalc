@@ -34,7 +34,7 @@
         <enum name="below_the_previous" value="4" />
     </attr>
 
-    <declare-styleable name="CalcEditText">
+    <declare-styleable name="FormulaEditText">
         <attr name="contextMenuExpand" format="boolean" />
         <attr name="contextMenuCut" format="boolean" />
         <attr name="contextMenuCopy" format="boolean" />
@@ -50,6 +50,7 @@
         <attr name="calculatedValue" format="boolean" />
         <attr name="autoScrollMargins" format="dimension" />
         <attr name="fileName" format="boolean" />
+
         <!-- custom content types -->
         <attr name="emptyEnabled" format="boolean" />
         <attr name="intervalEnabled" format="boolean" />
@@ -58,6 +59,7 @@
         <attr name="newTermEnabled" format="boolean" />
         <attr name="fileOperationEnabled" format="boolean" />
     </declare-styleable>
+
     <declare-styleable name="PlotViewExtension">
         <attr name="gridLineColor" format="color" />
         <attr name="gridLineWidth" format="dimension" />
@@ -103,5 +105,9 @@
         <attr name="buttonType" />
     </declare-styleable>
 
+    <declare-styleable name="FormulaLayout">
+        <attr name="specialAlignment" />
+    </declare-styleable>
 
+    <declare-styleable name="CalculatorTheme" />
 </resources>

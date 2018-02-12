@@ -25,10 +25,11 @@ import android.widget.LinearLayout;
 
 import com.duy.natural.calc.calculator.evaluator.CalculateTask;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask.CancelException;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.formula.type.IntervalType;
 import com.mkulesh.micromath.math.CalculatedValue;
-import com.mkulesh.micromath.widgets.CalcEditText;
-import com.mkulesh.micromath.widgets.CalcTextView;
+import com.mkulesh.micromath.widgets.FormulaEditText;
+import com.mkulesh.micromath.widgets.FormulaTextView;
 import com.nstudio.calc.casio.R;
 
 import org.apache.commons.math3.util.FastMath;
@@ -112,8 +113,8 @@ public class FormulaTermIntervalView extends FormulaTermView {
     }
 
     @Override
-    public TermField.TermType getTermType() {
-        return TermField.TermType.INTERVAL;
+    public FormulaTermType.TermType getTermType() {
+        return FormulaTermType.TermType.INTERVAL;
     }
 
     @Override
@@ -122,22 +123,22 @@ public class FormulaTermIntervalView extends FormulaTermView {
     }
 
     @Override
-    protected CalcTextView initializeSymbol(CalcTextView v) {
+    protected FormulaTextView initializeSymbol(FormulaTextView v) {
         if (v.getText() != null) {
             String t = v.getText().toString();
             if (t.equals(getContext().getResources().getString(R.string.formula_left_bracket_key))) {
-                v.prepare(CalcTextView.SymbolType.LEFT_SQR_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
+                v.prepare(FormulaTextView.SymbolType.LEFT_SQR_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
                         this);
                 v.setText("."); // this text defines view width/height
             } else if (t.equals(getContext().getResources().getString(R.string.formula_right_bracket_key))) {
-                v.prepare(CalcTextView.SymbolType.RIGHT_SQR_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
+                v.prepare(FormulaTextView.SymbolType.RIGHT_SQR_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
                         this);
                 v.setText("."); // this text defines view width/height
             } else if (t.equals(getContext().getResources().getString(R.string.formula_first_separator_key))) {
-                v.prepare(CalcTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
+                v.prepare(FormulaTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
                 v.setText(getContext().getResources().getString(R.string.formula_interval_first_separator));
             } else if (t.equals(getContext().getResources().getString(R.string.formula_second_separator_key))) {
-                v.prepare(CalcTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
+                v.prepare(FormulaTextView.SymbolType.TEXT, getFormulaRoot().getFormulaList().getActivity(), this);
                 v.setText(getContext().getResources().getString(R.string.formula_interval_second_separator));
             }
         }
@@ -145,22 +146,22 @@ public class FormulaTermIntervalView extends FormulaTermView {
     }
 
     @Override
-    protected CalcEditText initializeTerm(CalcEditText v, LinearLayout l) {
-        if (v.getText() != null) {
-            if (v.getText().toString().equals(getContext().getResources().getString(R.string.formula_min_value_key))) {
-                mMinValueTerm = addTerm(getFormulaRoot(), l, v, this, false);
+    protected FormulaEditText initializeTerm(FormulaEditText child, LinearLayout parent) {
+        if (child.getText() != null) {
+            if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_min_value_key))) {
+                mMinValueTerm = addTerm(getFormulaRoot(), parent, child, this, false);
                 mMinValueTerm.bracketsType = TermField.BracketsType.NEVER;
-            } else if (v.getText().toString()
+            } else if (child.getText().toString()
                     .equals(getContext().getResources().getString(R.string.formula_next_value_key))) {
-                mNextValueTerm = addTerm(getFormulaRoot(), l, v, this, false);
+                mNextValueTerm = addTerm(getFormulaRoot(), parent, child, this, false);
                 mNextValueTerm.bracketsType = TermField.BracketsType.NEVER;
-            } else if (v.getText().toString()
+            } else if (child.getText().toString()
                     .equals(getContext().getResources().getString(R.string.formula_max_value_key))) {
-                mMaxValueTerm = addTerm(getFormulaRoot(), l, v, this, false);
+                mMaxValueTerm = addTerm(getFormulaRoot(), parent, child, this, false);
                 mMaxValueTerm.bracketsType = TermField.BracketsType.NEVER;
             }
         }
-        return v;
+        return child;
     }
 
 

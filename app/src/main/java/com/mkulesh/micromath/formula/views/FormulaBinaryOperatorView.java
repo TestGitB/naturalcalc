@@ -26,10 +26,11 @@ import android.widget.LinearLayout;
 
 import com.duy.natural.calc.calculator.evaluator.CalculateTask;
 import com.duy.natural.calc.calculator.evaluator.CalculateTask.CancelException;
+import com.mkulesh.micromath.formula.type.FormulaTermType;
 import com.mkulesh.micromath.formula.type.OperatorType;
 import com.mkulesh.micromath.math.CalculatedValue;
-import com.mkulesh.micromath.widgets.CalcEditText;
-import com.mkulesh.micromath.widgets.CalcTextView;
+import com.mkulesh.micromath.widgets.FormulaEditText;
+import com.mkulesh.micromath.widgets.FormulaTextView;
 import com.nstudio.calc.casio.R;
 
 public class FormulaBinaryOperatorView extends FormulaTermView {
@@ -42,10 +43,10 @@ public class FormulaBinaryOperatorView extends FormulaTermView {
     private TermField mRightTerm = null;
     private boolean mUseBrackets = false;
 
-    public FormulaBinaryOperatorView(TermField owner, LinearLayout layout, String text, int index) throws Exception {
+    public FormulaBinaryOperatorView(TermField owner, LinearLayout layout, String code, int index) throws Exception {
         super(owner.getFormulaRoot(), layout, owner.mTermDepth);
         setParentField(owner);
-        onCreate(text, index, owner.bracketsType);
+        onCreate(code, index, owner.bracketsType);
     }
 
     public FormulaBinaryOperatorView(Context context) {
@@ -83,8 +84,8 @@ public class FormulaBinaryOperatorView extends FormulaTermView {
 
 
     @Override
-    public TermField.TermType getTermType() {
-        return TermField.TermType.OPERATOR;
+    public FormulaTermType.TermType getTermType() {
+        return FormulaTermType.TermType.OPERATOR;
     }
 
     @Override
@@ -93,37 +94,37 @@ public class FormulaBinaryOperatorView extends FormulaTermView {
     }
 
     @Override
-    protected CalcTextView initializeSymbol(CalcTextView view) {
+    protected FormulaTextView initializeSymbol(FormulaTextView view) {
         if (view.getText() != null) {
             String t = view.getText().toString();
             if (t.equals(getContext().getResources().getString(R.string.formula_operator_key))) {
                 switch (mOperatorType) {
                     case PLUS:
-                        view.prepare(CalcTextView.SymbolType.PLUS, getFormulaRoot().getFormulaList().getActivity(), this);
+                        view.prepare(FormulaTextView.SymbolType.PLUS, getFormulaRoot().getFormulaList().getActivity(), this);
                         view.setText("..");
                         break;
                     case MINUS:
-                        view.prepare(CalcTextView.SymbolType.MINUS, getFormulaRoot().getFormulaList().getActivity(), this);
+                        view.prepare(FormulaTextView.SymbolType.MINUS, getFormulaRoot().getFormulaList().getActivity(), this);
                         view.setText("..");
                         break;
                     case MULTIPLY:
-                        view.prepare(CalcTextView.SymbolType.MULT, getFormulaRoot().getFormulaList().getActivity(), this);
+                        view.prepare(FormulaTextView.SymbolType.MULT, getFormulaRoot().getFormulaList().getActivity(), this);
                         view.setText(".");
                         break;
                     case FRACTION:
-                        view.prepare(CalcTextView.SymbolType.HOR_LINE, getFormulaRoot().getFormulaList().getActivity(), this);
+                        view.prepare(FormulaTextView.SymbolType.HOR_LINE, getFormulaRoot().getFormulaList().getActivity(), this);
                         view.setText("_");
                         break;
                     case DIVIDE_SLASH:
-                        view.prepare(CalcTextView.SymbolType.SLASH, getFormulaRoot().getFormulaList().getActivity(), this);
+                        view.prepare(FormulaTextView.SymbolType.SLASH, getFormulaRoot().getFormulaList().getActivity(), this);
                         view.setText("_");
                         break;
                 }
             } else if (t.equals(getContext().getResources().getString(R.string.formula_left_bracket_key))) {
-                view.prepare(CalcTextView.SymbolType.LEFT_BRACKET, getFormulaRoot().getFormulaList().getActivity(), this);
+                view.prepare(FormulaTextView.SymbolType.LEFT_BRACKET, getFormulaRoot().getFormulaList().getActivity(), this);
                 view.setText("."); // this text defines view width/height
             } else if (t.equals(getContext().getResources().getString(R.string.formula_right_bracket_key))) {
-                view.prepare(CalcTextView.SymbolType.RIGHT_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
+                view.prepare(FormulaTextView.SymbolType.RIGHT_BRACKET, getFormulaRoot().getFormulaList().getActivity(),
                         this);
                 view.setText("."); // this text defines view width/height
             }
@@ -132,23 +133,23 @@ public class FormulaBinaryOperatorView extends FormulaTermView {
     }
 
     @Override
-    protected CalcEditText initializeTerm(CalcEditText editText, LinearLayout l) {
-        if (editText.getText() != null) {
-            if (editText.getText().toString().equals(getContext().getResources().getString(R.string.formula_left_term_key))) {
+    protected FormulaEditText initializeTerm(FormulaEditText child, LinearLayout parent) {
+        if (child.getText() != null) {
+            if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_left_term_key))) {
                 final boolean addDepth = mOperatorType == OperatorType.FRACTION;
-                mLeftTerm = addTerm(getFormulaRoot(), l, editText, this, addDepth);
+                mLeftTerm = addTerm(getFormulaRoot(), parent, child, this, addDepth);
             }
-            if (editText.getText().toString().equals(getContext().getResources().getString(R.string.formula_right_term_key))) {
+            if (child.getText().toString().equals(getContext().getResources().getString(R.string.formula_right_term_key))) {
                 final int addDepth = (mOperatorType == OperatorType.FRACTION) ? 1 : 0;
-                mRightTerm = addTerm(getFormulaRoot(), l, -1, editText, this, addDepth);
+                mRightTerm = addTerm(getFormulaRoot(), parent, -1, child, this, addDepth);
             }
         }
-        return editText;
+        return child;
     }
 
 
     @Override
-    public void onDelete(CalcEditText owner) {
+    public void onDelete(FormulaEditText owner) {
         if (parentField != null) {
             TermField t = findTerm(owner);
             TermField r = null;
@@ -164,13 +165,13 @@ public class FormulaBinaryOperatorView extends FormulaTermView {
     /**
      * Procedure creates the formula layout
      */
-    private void onCreate(String textCode, int index, TermField.BracketsType bracketsType) throws Exception {
+    private void onCreate(String code, int index, TermField.BracketsType bracketsType) throws Exception {
         if (index < 0 || index > layout.getChildCount()) {
             throw new Exception("cannot create FormulaTermOperator for invalid insertion index " + index);
         }
-        mOperatorType = getOperatorType(getContext(), textCode);
+        mOperatorType = getOperatorType(getContext(), code);
         if (mOperatorType == null) {
-            throw new Exception("cannot create FormulaTermOperator for unknown operator");
+            throw new Exception("cannot create FormulaBinaryOperatorView for unknown operator");
         }
         switch (mOperatorType) {
             case PLUS:
@@ -193,7 +194,7 @@ public class FormulaBinaryOperatorView extends FormulaTermView {
             throw new Exception("cannot initialize operator terms");
         }
         // set texts for left and right parts
-        TermField.divideString(textCode, getContext().getResources().getString(mOperatorType.getSymbolId()), mLeftTerm, mRightTerm);
+        TermField.divideString(code, getContext().getResources().getString(mOperatorType.getSymbolId()), mLeftTerm, mRightTerm);
 
         // disable brackets of child terms in some cases
         switch (mOperatorType) {
